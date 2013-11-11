@@ -169,7 +169,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
     public boolean collapseCameraControls() {
         boolean ret = false;
         if (mPopup != null) {
-            dismissPopup(false);
+            dismissPopup();
             ret = true;
         }
         return ret;
@@ -177,7 +177,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
 
     public boolean removeTopLevelPopup() {
         if (mPopup != null) {
-            dismissPopup(true);
+            dismissPopup();
             return true;
         }
         return false;
@@ -336,14 +336,11 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
         mGestures.addTouchReceiver(mPopup);
     }
 
-    public void dismissPopup(boolean topLevelOnly) {
-        dismissPopup(topLevelOnly, true);
+    public void dismissPopup() {
+        dismissPopup(true);
     }
 
-    public void dismissPopup(boolean topLevelPopupOnly, boolean fullScreen) {
-        // In review mode, we do not want to bring up the camera UI
-        if (mController.isInReviewMode()) return;
-
+    private void dismissPopup(boolean fullScreen) {
         if (fullScreen) {
             mActivity.showUI();
             mBlocker.setVisibility(View.VISIBLE);
@@ -354,7 +351,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
             ((FrameLayout) mRootView).removeView(mPopup);
             mPopup = null;
         }
-        mVideoMenu.popupDismissed(topLevelPopupOnly);
+        mVideoMenu.popupDismissed();
     }
 
     public void onShowSwitcherPopup() {
@@ -388,7 +385,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
     // PieListener
     @Override
     public void onPieOpened(int centerX, int centerY) {
-        dismissPopup(false, true);
+        dismissPopup();
         mActivity.cancelActivityTouchHandling();
         mActivity.setSwipingEnabled(false);
     }
@@ -432,7 +429,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
         return mSurfaceViewReady;
     }
 
-    public void showRecordingUI(boolean recording, boolean zoomSupported) {
+    public void showRecordingUI(boolean recording, boolean zoomSupported, boolean isTimeLapse) {
         mMenu.setVisibility(recording ? View.GONE : View.VISIBLE);
         mOnScreenIndicators.setVisibility(recording ? View.GONE : View.VISIBLE);
         if (recording) {
@@ -440,7 +437,9 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
             mActivity.hideSwitcher();
             mRecordingTimeView.setText("");
             mRecordingTimeView.setVisibility(View.VISIBLE);
-            mPauseButton.setVisibility(View.VISIBLE);
+            if (!isTimeLapse) {
+                mPauseButton.setVisibility(View.VISIBLE);
+            }
             // The camera is not allowed to be accessed in older api levels during
             // recording. It is therefore necessary to hide the zoom UI on older
             // platforms.
@@ -453,7 +452,8 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
             mShutterButton.setImageResource(R.drawable.btn_new_shutter_video);
             mActivity.showSwitcher();
             mRecordingTimeView.setVisibility(View.GONE);
-            mPauseButton.setVisibility(View.GONE);
+            if (!isTimeLapse)
+                mPauseButton.setVisibility(View.GONE);
             if (!ApiHelper.HAS_ZOOM_WHEN_RECORDING && zoomSupported) {
                 // TODO: enable zoom UI here.
             }
@@ -498,7 +498,7 @@ public class VideoUI implements SurfaceHolder.Callback, PieRenderer.PieListener,
             mGestures.setEnabled(full);
         }
         if (mPopup != null) {
-            dismissPopup(false, full);
+            dismissPopup();
         }
         if (mRenderOverlay != null) {
             // this can not happen in capture mode

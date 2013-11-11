@@ -556,7 +556,7 @@ public class VideoModule implements CameraModule,
 
         if (!mMediaRecorderRecording) {
             // check for dismissing popup
-            mUI.dismissPopup(true);
+            mUI.dismissPopup();
             return;
         }
 
@@ -937,7 +937,7 @@ public class VideoModule implements CameraModule,
             mStartPreviewThread.start();
         } else {
             // preview already started
-            mUI.enableShutter(true);
+            mHandler.sendEmptyMessage(ENABLE_SHUTTER_BUTTON);
         }
 
         // Initializing it here after the preview is started.
@@ -1787,7 +1787,7 @@ public class VideoModule implements CameraModule,
         }
         mRecordingTotalTime = 0L;
         mRecordingStartTime = SystemClock.uptimeMillis();
-        mUI.showRecordingUI(true, mParameters.isZoomSupported());
+        mUI.showRecordingUI(true, mParameters.isZoomSupported(), mCaptureTimeLapse);
 
         updateRecordingTime();
         keepScreenOn();
@@ -1895,7 +1895,7 @@ public class VideoModule implements CameraModule,
                 closeCamera(closeEffects);
             }
 
-            mUI.showRecordingUI(false, mParameters.isZoomSupported());
+            mUI.showRecordingUI(false, mParameters.isZoomSupported(), mCaptureTimeLapse);
             if (!mIsVideoCaptureIntent) {
                 mUI.enableCameraControls(true);
             }
